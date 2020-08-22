@@ -1,0 +1,282 @@
+
+//Start Kunde Anzeigen
+<?php
+	session_start();
+	if(!isset($_SESSION['User'])){
+		header('Location: login.php');
+		exit();
+	}
+?>
+<!doctype html>
+<html>
+	<head>
+		<title>Kunde anzeigen</title>
+		<meta charset="utf-8">
+		<style>
+	
+			#u1 {
+				background-color: gray;
+				color: black;
+			}
+		
+		</style>
+	</head>
+	<body>
+	<?php
+
+	echo "<div align='center'>
+		<a href='kunden_einfuegen.php'>Neuer Kunde</a> |
+		<a href='logout.php'>Logout</a>	
+	</div><hr>";
+	$m = new mysqli('localhost','root','','test');
+	if($m->connect_errno){
+			die("Verbindung fehlgeschlagen: " . $m->connect_errno);
+	}
+	if(isset($_GET['aktion'])){
+		if( $_GET['aktion'] == 'delete'){
+			$sql = "DELETE FROM kunde WHERE id_Kunde = " . $_GET['id'];
+			$m->query($sql);
+		}			
+	}
+	
+	$result = $m->query("SELECT * FROM kunde");
+	
+	echo '<table align="center" border="1" cellpadding="10" cellspacing="0">';
+	echo '<tr id="u1"><th>id</th><th>Nachname</th><th>Vorname</th><th>Email</th><th>DELETE</th><th>Edit</th></tr>';
+	$zz = 0;
+	while($t = $result->fetch_assoc()){
+		$zz++;
+		$bgcolor = ($zz%2)?"#c4c4c4":"#fff";
+		echo "<tr bgcolor='$bgcolor'>
+			<td>" . $t['id_Kunde'] . "</td>
+			<td>" . $t['Nachname'] . "</td>
+			<td>" . $t['Vorname'] . "</td>
+			<td>" . $t['Email'] . "</td>
+			<td><a href='kunden_anzeigen.php?aktion=delete&id=". $t['id_Kunde'] . "'>DELETE</a></td>
+			<td><a href='kunden_edit.php?id=". $t['id_Kunde'] . "'>Update</a></td>			
+			</tr>";
+	}	
+	?>
+	</body>
+</html>
+
+//Ende Kunde Anzeigen
+
+//Start Kunde Edit
+<?php
+	session_start();
+	if(!isset($_SESSION['User'])){
+		header('Location: login.php');
+		exit();
+	}
+?>
+<!doctype html>
+<html>
+	<head>
+		<title>Kunde Edit</title>
+		<meta charset="utf-8">
+	</head>
+	<body>
+	<form method="post">
+	<?php
+	
+		
+	echo "<div align='center'>
+		<a href='kunden_anzeigen.php'>Daten anzeigen</a> |
+		<a href='kunden_einfuegen.php'>Neuer Kunde</a>	|
+		<a href='logout.php'>Logout</a>
+	</div><hr>";	
+	$m = new mysqli('localhost','root','','test');	
+	if($m->connect_errno){
+			die("Verbindung fehlgeschlagen: " . $m->connect_errno);
+	}	
+	if(isset($_POST['sub'])){
+		$n = $_POST['Nachname'];
+		$v = $_POST['Vorname'];
+		$e = $_POST['Email'];
+		$id = $_POST['id'];		
+		$sql = "UPDATE kunde SET Nachname = '$n', Vorname = '$v', Email = '$e' WHERE id_Kunde = $id"; 
+		$m->query($sql);
+		header("Location: kunden_anzeigen.php");		
+	}	
+	if(isset($_GET['id'])){		
+			$sql = "SELECT * FROM kunde WHERE id_Kunde = " . $_GET['id'] ; 
+			$result = $m->query($sql);
+			$t = $result->fetch_assoc(); 
+	}	
+?>	
+	<table align="center" border="1" cellpadding="10" cellspacing="0">
+		<tr>
+			<td>Nachname</td>
+			<td><input name="Nachname" size="40" value="<?php echo $t['Nachname']; ?>"></td>
+		</tr>
+		<tr>
+			<td>Vorname</td>
+			<td><input name="Vorname" size="40" value="<?php echo $t['Vorname']; ?>"></td>
+		</tr>
+		<tr>
+			<td>Email</td>
+			<td><input name="Email" size="40" type="email" value="<?php echo $t['Email']; ?>"></td>
+		</tr>
+		<input type="hidden" name="id" value="<?php echo $t['id_Kunde']; ?>">
+		<tr>
+			<td><br></td>
+			<td><input name="sub" type="submit" value="Speichern">
+		</tr>
+	</table>	
+	</form>
+	</body>
+</html>
+
+//Ende Kunde Edit
+
+//Start Kunde Einfügen
+<?php
+	session_start();
+	if(!isset($_SESSION['User'])){
+		header('Location: login.php');
+		exit();
+	}
+?>
+<!doctype html>
+<html>
+	<head>
+		<title>Kunde einfügen</title>
+		<meta charset="utf-8">
+	</head>
+	<body>
+	<form method="post">
+	<?php
+	
+
+	echo "<div align='center'>
+		<a href='kunden_anzeigen.php'>Daten anzeigen</a> |
+		<a href='logout.php'>Logout</a>		
+	</div><hr>";	
+	$m = new mysqli('localhost','root','','test');	
+	if($m->connect_errno){
+			die("Verbindung fehlgeschlagen: " . $m->connect_errno);
+	}	
+	if(isset($_POST['sub'])){
+			$n = $_POST['Nachname'];
+			$v = $_POST['Vorname'];
+			$e = $_POST['Email'];		
+			$sql = "INSERT INTO kunde (id_Kunde, Nachname, Vorname, Email) VALUES (NULL, '$n', '$v', '$e')"; 
+			$m->query($sql);
+			header("Location: kunden_anzeigen.php");
+	}	
+?>	
+	<table align="center" border="1" cellpadding="10" cellspacing="0">
+		<tr>
+			<td>Nachname</td>
+			<td><input name="Nachname" size="40"></td>
+		</tr>
+		<tr>
+			<td>Vorname</td>
+			<td><input name="Vorname" size="40"></td>
+		</tr>
+		<tr>
+			<td>Email</td>
+			<td><input name="Email" type="email" size="40"></td>
+		</tr>
+		<tr>
+			<td><br></td>
+			<td><input name="sub" type="submit" value="Speichern">
+		</tr>
+	</table>	
+	</form>
+	</body>
+</html>
+
+//Ende Kunde Einfügen
+
+//Start Login
+
+<?php
+	error_reporting(0);
+	$m = new mysqli('localhost','root','','test');
+	
+	if($m->connect_errno){
+			die("Verbindung fehlgeschlagen: " . $m->connect_errno);
+	}
+	
+	if(isset($_POST['sub'])){
+		$u = $m->real_escape_string($_POST['User']);
+		$p = $m->real_escape_string($_POST['Passwort']);
+		$sql = "SELECT * FROM user WHERE Name = '$u'";
+		$result = $m->query($sql);
+		$t = $result->fetch_assoc();				
+		if (password_verify($p, $t['Passwort'])) {
+			session_start();
+			$_SESSION['User'] = $u;
+			//echo "<hr>Richtiges Passwort<hr>";
+			header('Location: kunden_anzeigen.php');
+		} else {
+			//echo "<hr>Passwort fehlerhaft<hr>";
+		}
+	}
+?>
+<!doctype html>
+<html>
+	<head>
+		<title>Login</title>
+		<meta charset="utf-8">
+	</head>
+	<body>
+	<form method="post">
+	
+	
+	<div align='center'>
+		<br>
+	</div><hr>
+	
+	<table align="center" border="1" cellpadding="10" cellspacing="0">
+	<tr>
+		<td>User</td>
+		<td><input name="User"></td>
+	</tr>
+	<tr>
+		<td>Passwort</td>
+		<td><input name="Passwort" type="password"></td>
+	</tr>
+	<tr>
+		<td><br></td>
+		<td><input name="sub" type="submit" value="Login">
+	</tr>
+	</table>
+	
+	</form>
+	<hr>
+	</body>
+</html>
+
+//Ende Login
+
+//Start Logout
+
+<?php
+	session_start();
+	unset($_SESSION['User']);
+	header('Location: login.php');
+	exit();
+?>
+
+//Ende Logout
+
+//Start Passwort
+
+<!doctype html>
+<html>
+	<head>
+		<title>Passwort</title>
+		<meta charset="utf-8">
+	</head>
+	<body>
+	<?php
+		$p = "asdasd";
+		echo "<hr>" . password_hash( $p, PASSWORD_DEFAULT) . "<hr>";
+	?>
+	</body>
+</html>
+
+//Ende Passwort
